@@ -20,9 +20,7 @@ var now = new Date();
 process.on('unhandledRejection', (error) => { console.error(error); process.exit(-1); });
 console.log(`STARTED SCRIPT DATE >>>` + "[" + now.toLocaleString() + "]");
 
-var file = "./access.log",
-    blacklist = [''],
-    white = ['']
+var file = "./access.log", blacklist = [''], white = [''], FILE = "./access.log", line
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -44,13 +42,13 @@ function input(prompt) {
     });
 }
 
-let main = async () => {
-    let amt = await input("Enter the amount to check: ");
-    console.log(amt);
-    let uname = await input("Enter your name: ");
-    console.log(uname);
-    rl.close();
-};
+// let main = async () => {
+//     let amt = await input("Enter the amount to check: ");
+//     console.log(amt);
+//     let uname = await input("Enter your name: ");
+//     console.log(uname);
+//     rl.close();
+// };
 
 console.log(
     "\n\n -----------------------------------------------------------------------------------------------------------\n" +
@@ -85,51 +83,53 @@ rl.on('line', (line) => {
     switch (command[0]) {
         case 'logparseerror':
         case '1':
-            console.log('Введена команда [ Просмотр log ошибок ]\n');
+            logcom("Введена команда [ Просмотр log ошибок")
             logparseerror()
             break;
         case 'moniterr':
         case '2':
-            console.log('Введена команда [ Мониторинг ошибок из log ]');
+            //Мониторинг ошибок из log
+            logcom("Мониторинг ошибок из log")
             moniterr()
             break;
         case 'parseget':
         case '3':
-            console.log('Введена команда [ Вывести запросы GET ]');
+            logcom("Вывести запросы GET")
             parseget()
             break;
         case 'parsepost':
         case '4':
-            console.log('Введена команда [ Вывести запросы POST ]');
+            logcom("Вывести запросы POST")
             parsepost()
             break;
         case 'parsepropfind':
         case '5':
-            console.log('Введена команда [ Вывести запросы PROPFIND ]');
+            logcom("Вывести запросы PROPFIND")
             parsepropfind()
             break;
         case 'monitip':
         case '6':
-            console.log('Введена команда [ Мониторинг по IP ]');
+            logcom("Мониторинг по IP")
             let main2 = async () => {
                 let amt = await input("Введите IP Адрес: ");
-                console.log(amt);
+                logvod(amt)
                 monitip(amt)
             };
             main2()
             break;
         case 'parseval':
         case '7':
-            console.log('Введена команда [ Вывести лог с определенными значениями ]');
+            logcom("Вывести лог с определенными значениями")
             let main3 = async () => {
                 let val1 = await input("Введите значение без пробелов: ");
+                logvod(val1)
                 parseval(val1)
             };
             main3()
             break;
         case 'monitval':
         case '8':
-            console.log('Введена команда [ Мониторинг с определенными значениями ]');
+            logcom("Мониторинг с определенными значениями")
             let main4 = async () => {
                 let val2 = await input("Введите определенное значение без пробелов и знаков препинания: ");
                 monitval(val2)
@@ -138,12 +138,12 @@ rl.on('line', (line) => {
             break;
         case 'top':
         case '9':
-            console.log('Введена команда [ top ]');
+            logcom("top")
             let main1 = async () => {
                 let amt = await input("Введите значения топ: ");
-                console.log(amt);
-                let parval = await input("Что будем выводить? : ");
-                console.log(parval);
+                logvod(amt)
+                let parval = await input("Введите текст для просмотра : ");
+                logvod(parval)
                 top(amt, parval)
                 //rl.close();
             };
@@ -151,11 +151,12 @@ rl.on('line', (line) => {
             break;
         case 'cls':
         case '12':
+            logcom("Очистка консоли")
             clearconsole();
             break;
         case '13':
         case 'q':
-            console.log('Выход выполнен');
+            logcom("Выход")
             process.exit(0);
             break;
         default:
@@ -168,14 +169,52 @@ rl.on('line', (line) => {
     console.log('Выход выполнен');
     process.exit(0);
 });
+function logvod(vla) { console.log(`Введено значение [ ${vla} ]`) }
+function logcom(vl) { console.log(`Введена команда [ ${vl} ]`) }
+function lineend(vline) { console.log(`Найдено строк [ ${vline} ]`) }
 
 function logparseerror() { }
 function moniterr() { }
-function parseget() { }
-function parsepost() { }
-function parsepropfind() { }
+function parseget() {
+    let file = fs.readFileSync(FILE, 'utf8')
+    const regexp = /^.*\GET\b.*$/mg;
+    const matches = file.match(regexp) || [];
+    matches.forEach(line => {
+        console.log(line)
+    })
+    lineend(matches.length)
+}
+function parsepost() {
+    let file = fs.readFileSync(FILE, 'utf8')
+    const regexp = /^.*\POST\b.*$/mg;
+    const matches = file.match(regexp) || [];
+    matches.forEach(line => {console.log(line)})
+    lineend(matches.length)
+}
+function parsepropfind() {
+    let file = fs.readFileSync(FILE, 'utf8')
+    const regexp = /^.*\PROPFIND\b.*$/mg;
+    const matches = file.match(regexp) || [];
+    matches.forEach(line => {console.log(line)})
+    lineend(matches.length)
+
+    // fs.readFile(FILE, 'utf8', (err, data) => {
+    //     if (err) return console.error(err);
+    //     let j = data.split('\n').length - 1;
+    //     for (var d = 0; d < j; d++) {
+    //         let date = data.split('\n')[d];
+    //         arr[d] = date;
+    //         console.log(arr[d])
+    //         const regexp = /^.*\logo\b.*$/mg;
+    //         const matches = file.match(regexp);
+    //         console.log(`[${d}] ${matches}`);
+
+    //     }
+    //     lineend(arr.length)
+    // })
+}
 function monitip() { }
-function parseval() { }
+function parseval(value) {}
 function monitval() { }
 function top() { }
 
